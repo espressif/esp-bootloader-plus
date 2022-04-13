@@ -22,6 +22,7 @@ import os
 from Crypto.Cipher import AES
 import subprocess
 import json
+import lzma
 
 # src_file = 'hello-world.bin'
 # compressed_file = 'hello-world.bin.xz'
@@ -52,10 +53,15 @@ def xz_compress(store_directory, in_file):
     compressed_file = ''.join([in_file,'.xz'])
     if(os.path.exists(compressed_file)):
         subprocess.call('rm -rf {0}'.format(compressed_file), shell = True)
-    ret = subprocess.call('xz --check=crc32 --lzma2=dict=64KiB -k {0}'.format(in_file), shell = True)
-    print('xz compress cmd return: {}'.format(ret))
-    if ret:
-        raise Exception('xz compress cmd failed')
+
+    xz_compressor_filter = [
+        {"id": lzma.FILTER_LZMA2, "preset": 6, "dict_size": 64*1024},
+    ]
+    with open(in_file, 'rb') as src_f:
+        data = src_f.read()
+        with lzma.open(compressed_file, "wb", format=lzma.FORMAT_XZ, check=lzma.CHECK_CRC32, filters=xz_compressor_filter) as f:
+            f.write(data)
+            f.close()
     
     if not os.path.exists(''.join([store_directory,'/',compressed_file.split('/')[-1]])):
         ret = subprocess.call('cp -f {0} {1}'.format(compressed_file, store_directory), shell = True)
