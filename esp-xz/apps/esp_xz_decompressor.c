@@ -110,36 +110,10 @@
 #include "esp_xz_decompressor.h"
 
 /* Size of the input and output buffers in multi-call mode */
-#define XZ_IOBUF_SIZE                       4096
+#define XZ_IOBUF_SIZE                       4096 // have to be 4-byte aligned. If write_encrypted is set, size must be 32-byte aligned.
 
 #ifdef	CONFIG_XZ_DECOMPRESS_DEBUG_ON
 static const char *TAG = "esp xz";
-#endif
-
-#ifdef BOOTLOADER_BUILD
-#define XZ_BOOT_HEAP_ADDRESS				(0x3FC7C000 + 0x4000) // for esp32c3 chip, you can use the free space form this address, pay attention your chip for this
-static uint8_t* heap_pool = (uint8_t*)XZ_BOOT_HEAP_ADDRESS; // now these memory is not been used
-static uint32_t heap_used_offset = 0;
-
-void* vmalloc(size_t size)
-{
-	void* p = NULL;
-
-	if (heap_used_offset + size < CONFIG_XZ_BOOT_TOTAL_HEAP_SIZE) {
-		p = &heap_pool[heap_used_offset];
-		heap_used_offset += size;
-	}
-#ifdef	CONFIG_XZ_DECOMPRESS_DEBUG_ON
-	ESP_LOGI(TAG, "heap_used_offset=%d", heap_used_offset);
-#endif
-	return p;
-}
-
-// If use the xz decompress in bootloader, we don't support free now!
-void vfree(void *ptr)
-{
-
-}
 #endif
 
 XZ_EXTERN void xz_crc32_init(void)

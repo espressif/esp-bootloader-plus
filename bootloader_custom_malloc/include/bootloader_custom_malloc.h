@@ -12,14 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bootloader_decompressor_none.h"
+#pragma once
 
-int bootloader_decompressor_none_init(bootloader_custom_ota_params_t *params)
-{
-    return 0;
-}
+#include <stdint.h>
 
-int bootloader_decompressor_none_input(void *addr, int size)
-{
-    return size;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef BOOTLOADER_BUILD
+#include <stdlib.h>
+#define bootloader_custom_malloc(size) malloc(size)
+#define bootloader_custom_free(ptr) free(ptr)
+#else
+void* bootloader_custom_malloc(size_t size);
+void bootloader_custom_free(void *ptr);
+#endif
+
+#ifdef __cplusplus
 }
+#endif

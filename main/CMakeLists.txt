@@ -17,7 +17,7 @@ if(CONFIG_BOOTLOADER_DIFF_DDELTA)
         list(APPEND srcs "bootloader_diff_ddelta.c")
 endif()
 
-list(APPEND requires "esp-xz")
+list(APPEND requires "esp-xz" "bootloader_custom_malloc")
 
 idf_component_register(SRCS ${srcs}
                     INCLUDE_DIRS "../include"

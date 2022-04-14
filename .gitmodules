@@ -1,0 +1,6 @@
+[submodule "tools/esp_gen_patch"]
+	path = tools/esp_gen_patch
+	url = https://hub.fastgit.xyz/julian-klode/ddelta
+[submodule "tools/libdivsufsort"]
+	path = tools/libdivsufsort
+	url = https://hub.fastgit.xyz/y-256/libdivsufsort

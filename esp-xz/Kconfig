@@ -6,10 +6,4 @@ menu "XZ decompressor config"
         help
             Enable xz decompress debug log output
     
-    config XZ_BOOT_TOTAL_HEAP_SIZE
-        int "Bootloader heap size can be used for xz decompress"
-        default 204800
-        help
-            If use the xz decompress in bootloader, please pay attention the heap size can be used.
-    
 endmenu
