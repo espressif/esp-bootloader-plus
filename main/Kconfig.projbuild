@@ -7,7 +7,6 @@ menu "Bootloader config (Custom)"
 
         config BOOTLOADER_DECOMPRESSOR_XZ
         bool "XZ"
-        depends on IDF_TARGET_ESP32C3
         help
             Using XZ decompressor in custom bootloader.
             
@@ -16,4 +15,23 @@ menu "Bootloader config (Custom)"
     config BOOTLOADER_CUSTOM_DEBUG_ON
         bool "Turn on debug log in custom bootloader."
         default n
+    
+    config BOOTLOADER_DIFF_ENABLED
+        bool "Enable diff compressed ota support."
+        default n
+
+    choice BOOTLOADER_CUSTOM_DIFF
+        prompt "Choose diff method"
+        default BOOTLOADER_DIFF_DDELTA
+        depends on BOOTLOADER_DIFF_ENABLED
+        help
+            Choose the corresponding diff method to decode the decompressed data.
+
+        config BOOTLOADER_DIFF_DDELTA
+        bool "ddelta"
+        help
+            Using ddelta to decode the decompressed data in custom bootloader.
+            
+    endchoice
+
 endmenu

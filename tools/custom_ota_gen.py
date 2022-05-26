@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2021 Espressif Systems (Shanghai) PTE LTD
+# Copyright 2022 Espressif Systems (Shanghai) PTE LTD
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import os
 from Crypto.Cipher import AES
 import subprocess
 import json
+import lzma
 
 # src_file = 'hello-world.bin'
 # compressed_file = 'hello-world.bin.xz'
@@ -31,31 +32,40 @@ import json
 binary_compress_type = {'none': 0, 'xz':1}
 binary_delta_type = {'none': 0, 'ddelta':1}
 binary_encryption_type = {'none': 0, 'aes128':1}
+header_version = {'v1': 1, 'v2':2}
 
 AES_BLOCK_SIZE = AES.block_size     # AES data block length
-AES128_KEY_SIZE = 16                
+AES128_KEY_SIZE = 16
+# when diff ota is used, add crc32_checksum to the header to ensure the old app(or called 'base app') is the one matches the ptach. 
+# At present, we calculate the checksum of the first 4KB data of the old app.                
+OLD_APP_CHECK_DATA_SIZE = 4096      
 
-# |------|---------|---------|----------|------------|------------|-----------|----------|--------------|---------------|------------|------------|
-# |      | Magic   | header  | Compress | delta      | Encryption | Reserved  | Firmware | The CRC32 for| The length of | The MD5 of | compressed |
-# |      | number  | version | type     | type       | type       |           | version  | the header   | compressed bin|    bin     | firmware   |
-# |------|---------|---------|----------|------------|------------|-----------|----------|--------------|---------------|------------|------------|
-# | Size | 4 bytes | 1 byte  | 4 bits	| 4 bits     | 1 bytes	  | 1 bytes   | 32 bytes |  4 bytes     |  4 bytes	    | 32 bytes	 |            |
-# |------|---------|---------|----------|------------|------------|-----------|----------|--------------|---------------|------------|------------|
-# | Data | String  | little- | little-  | little-    | little-    |           | String   | little-endian| little-endian |   String   |            |
-# | type | ended   | endian  | endian   | endian     | endian     |           | ended    |    integer   |   integer     |   ended    |            |
-# |      |with ‘\0’| integer | integer	| integer    | integer 	  |           | with ‘\0’|              |               |   with ‘\0’| Binary data|
-# |------|---------|---------|----------|------------|------------|-----------|----------|--------------|---------------|------------|------------|
-# | Data | “ESP”   |    1    |   0/1/2  | 0/1/2      |	0/1       |           |          |              |               |            |            |
-# |------|---------|---------|----------|------------|------------|-----------|----------|--------------|---------------|------------|------------|
+# |------|---------|---------|----------|------------|------------|-----------|----------|---------------|------------|--------------|--------------|--------------|------------|
+# |      | Magic   | header  | Compress | delta      | Encryption | Reserved  | Firmware | The length of | The MD5 of | old app check| The CRC32 for| The CRC32 for| compressed |
+# |      | number  | version | type     | type       | type       |           | version  | compressed bin|    bin     | data len     | old app data | the header   | firmware   |
+# |------|---------|---------|----------|------------|------------|-----------|----------|---------------|------------|--------------|--------------|--------------|------------|
+# | Size | 4 bytes | 1 byte  | 4 bits	| 4 bits     | 1 bytes	  | 1 bytes   | 32 bytes |  4 bytes	     | 32 bytes	  |  4 bytes     |  4 bytes     |  4 bytes     |            |
+# |------|---------|---------|----------|------------|------------|-----------|----------|---------------|------------|--------------|--------------|--------------|------------|
+# | Data | String  | little- | little-  | little-    | little-    |           | String   | little-endian |   String   |little-endian | little-endian| little-endian|            |
+# | type | ended   | endian  | endian   | endian     | endian     |           | ended    |   integer     |   ended    |integer       |    integer   |    integer   |            |
+# |      |with ‘\0’| integer | integer	| integer    | integer 	  |           | with ‘\0’|               |   with ‘\0’|              |              |              | Binary data|
+# |------|---------|---------|----------|------------|------------|-----------|----------|---------------|------------|--------------|--------------|--------------|------------|
+# | Data | “ESP”   |    2    |   0/1/2  | 0/1/2      |	0/1       |           |          |               |            |              |              |              |            |
+# |------|---------|---------|----------|------------|------------|-----------|----------|---------------|------------|--------------|--------------|--------------|------------|
 
 def xz_compress(store_directory, in_file):
     compressed_file = ''.join([in_file,'.xz'])
     if(os.path.exists(compressed_file)):
         subprocess.call('rm -rf {0}'.format(compressed_file), shell = True)
-    ret = subprocess.call('xz --check=crc32 --lzma2=dict=64KiB -k {0}'.format(in_file), shell = True)
-    print('xz compress cmd return: {}'.format(ret))
-    if ret:
-        raise Exception('xz compress cmd failed')
+
+    xz_compressor_filter = [
+        {"id": lzma.FILTER_LZMA2, "preset": 6, "dict_size": 64*1024},
+    ]
+    with open(in_file, 'rb') as src_f:
+        data = src_f.read()
+        with lzma.open(compressed_file, "wb", format=lzma.FORMAT_XZ, check=lzma.CHECK_CRC32, filters=xz_compressor_filter) as f:
+            f.write(data)
+            f.close()
     
     if not os.path.exists(''.join([store_directory,'/',compressed_file.split('/')[-1]])):
         ret = subprocess.call('cp -f {0} {1}'.format(compressed_file, store_directory), shell = True)
@@ -115,12 +125,14 @@ def get_app_name():
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('-hv', '--header_ver', nargs='?', choices = ['v1', 'v2'], 
+            default='v1', help='the version of the packed file header [default:v1]')
     parser.add_argument('-c', '--compress_type', nargs= '?', choices = ['none', 'xz'], 
-            default='xz', help='firmware compressed type')
+            default='xz', help='firmware compressed type [default:xz]')
     parser.add_argument('-d', '--delta_type', nargs= '?', choices = ['none', 'ddelta'], 
-            default='none', help='firmware delta type')
+            default='none', help='firmware delta type [default:none]')
     parser.add_argument('-e', '--encryption_type', nargs= '?', choices = ['none', 'aes128'], 
-            default='none', help='the encryption type for the compressed firmware')
+            default='none', help='the encryption type for the compressed firmware [default:none]')
     parser.add_argument('-b', '--base_file', nargs = '?', 
             default='', help='the base firmware(only needed for delta compress type)')
     parser.add_argument('-i', '--in_file', nargs = '?', 
@@ -130,6 +142,7 @@ def main():
     parser.add_argument('--encry_key', nargs = '?', 
             default='', help='the encryption key used for encrypting file')
     parser.add_argument('-v', '--ver', nargs='?', default='', help='the version of the compressed firmware')
+    
     args = parser.parse_args()
 
     compress_type = args.compress_type
@@ -140,6 +153,7 @@ def main():
     sign_key = args.sign_key
     encry_key = args.encry_key
     base_file = args.base_file
+    header_ver = args.header_ver
 
     if src_file == '':
         origin_app_name = get_app_name()
@@ -165,6 +179,17 @@ def main():
     os.mkdir(cpmoressed_app_directory)
     print('The compressed file will store in {}'.format(cpmoressed_app_directory))
 
+    if header_ver == 'v2' :
+        # if the compress type is 'ddelta', we need to generate the uncompressed patch file, and then to compress the uncompressed patch file
+        if delta_type == 'ddelta':
+            uncompressed_patch = ''.join([cpmoressed_app_directory,'/','patch'])
+            ret = subprocess.call('./bootloader_components/tools/ddelta_generate {0} {1} {2}'.format(base_file, src_file, uncompressed_patch), shell = True)
+            # print('xz compress cmd return: {}'.format(ret))
+            if ret:
+                raise Exception("ddelta_gen cmd failed")
+            src_file = uncompressed_patch
+            print('to gen compressed patch')
+
     #step1: compress
     if compress_type == 'xz':
         xz_compress(cpmoressed_app_directory, os.path.abspath(src_file))
@@ -185,7 +210,7 @@ def main():
         # magic number
         bin_data = struct.pack('4s', b'ESP')
         # header version
-        bin_data += struct.pack('?', 1)
+        bin_data += struct.pack('B', header_version[header_ver])
         # Compress type
         bin_data += struct.pack('B', (binary_delta_type[delta_type] << 4) | binary_compress_type[compress_type])
         print('compressed type: {}'.format((binary_delta_type[delta_type] << 4) | binary_compress_type[compress_type]))
@@ -202,10 +227,25 @@ def main():
         bin_data += struct.pack('32s', firmware_ver.encode())
         # The length of the compressed binary
         bin_data += struct.pack('<I', f_len)
+        print('compressed app len: {}'.format(f_len))
         # The MD5 for the compressed binary
         bin_data += struct.pack('32s', hashlib.md5(data).digest())
+        if header_ver == 'v2' :
+            if delta_type != 'none' :
+                # The length of the old app data used to generate crc checksum
+                bin_data += struct.pack('<I', OLD_APP_CHECK_DATA_SIZE)
+                # The crc checksum of the old app data which length is OLD_APP_CHECK_DATA_SIZE
+                with open(base_file, 'rb') as base_f:
+                    old_app_check_data = base_f.read(OLD_APP_CHECK_DATA_SIZE)
+                    bin_data += struct.pack('<I', binascii.crc32(old_app_check_data, 0x0))
+                    print('add crc32 checksum of old app to the header')
+            else:
+                # Now it is not diff ota
+                bin_data += struct.pack('<I', 0)
+                bin_data += struct.pack('<I', 0)
         # The CRC32 for the header
         bin_data += struct.pack('<I', binascii.crc32(bin_data, 0x0))
+        
         # compressed firmware
         bin_data += data
         with open(packed_file, 'wb') as dst_f:

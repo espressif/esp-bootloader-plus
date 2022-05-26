@@ -41,15 +41,10 @@ typedef unsigned char bool;
 #include "esp_attr.h"
 #include "sdkconfig.h"
 #include "xz.h"
+#include "bootloader_custom_malloc.h"
 
-#ifndef BOOTLOADER_BUILD
-#include <stdlib.h>
-#define vmalloc(size) malloc(size)
-#define vfree(ptr) free(ptr)
-#else
-void* vmalloc(size_t size);
-void vfree(void *ptr);
-#endif
+#define vmalloc(size) 	bootloader_custom_malloc(size)
+#define vfree(ptr) 		bootloader_custom_free(ptr)
 
 #define kmalloc(size, flags) vmalloc(size)
 #define kfree(ptr) vfree(ptr)

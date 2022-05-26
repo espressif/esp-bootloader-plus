@@ -66,12 +66,29 @@ custom_ota_gen.py -i hello-world.bin --sign_key secure_boot_signing_key.pem
 ```
 Run the above command in your project directory will generate the  `custom_ota_binaries/hello-world.bin.xz.packed.signed` in the current directory. It is the compressed firmware and signed after compression. If [Secure Boot](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/security/secure-boot-v2.html) is used, you can use `--sign_key` option specifies the signature key to sign the compressed firmware, otherwise the ESP device will consider the compressed firmware as illegal data, resulting in upgrade failure.  
 
-Note: To append the image signature to the existing binary, `espsecure.py` needs to be installed. You can refer to [ESP-IDF-Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html) to install the tool.   
+Note: To append the image signature to the existing binary, `espsecure.py` needs to be installed. You can refer to [ESP-IDF-Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html) to install the tool. 
 
-## How to Test
+Example 3:    
+
+If you need to generate patch files, please switch to the `tools` directory and run the script `install_tools.sh`. Successful execution will prompt:
+
+```
+The tools is installed
+```
+
+Execute the following command to generate the patch file：
+
+```
+custom_ota_gen.py -hv v2 -c xz -d ddelta -i new_hello_world.bin -b build/hello_world.bin
+```
+
+Running the above command will generate a `custom_ota_binaries/patch.xz.packed` file in the current directory, which is the patch file obtained by the difference between the new firmware `new_hello_world.bin` and the old firmware `hello_world.bin`.
+
+## How to Test Compressed OTA
 You can use  [hello_world](https://github.com/espressif/esp-idf/tree/master/examples/get-started/hello_world) project to test the compression upgrade:  
 
-1）Navigate to `hello_world` directory and run command `https://github.com/espressif/esp-bootloader-plus.git bootloader_components` to clone esp bootloader plus.  
+1）Enter the `hello_world` directory and run command `git clone https://github.com/espressif/esp-bootloader-plus.git bootloader_components` to clone esp bootloader plus.  
+
 2）Create a new partition file `partitions_example.csv` in the `hello_world` directory as the following table:  
 
 ```
@@ -82,9 +99,17 @@ otadata,  data, ota,       ,        8k
 ota_0,    app,  ota_0,     ,        1216k,
 storage,  data, 0x22,      ,        640k,
 ```
-3）Execute command `idf.py set-target esp32c3` in the `hello_world` directory.  
+3）Add the default configuration file `sdkconfig.defaults` in the `hello_world` directory, and copy the following configuration to this file:
+```
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_example.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions_example.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0xb000
 
-4）Execute command `idf.py menuconfig` in the `hello_world` directory, and set the configuration of partition table to be the new created `partitions_example.csv` in step 2.   
+CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
+```
+
+4）Execute command `idf.py set-target esp32c3` in the `hello_world` directory.  
 
 5）Run command `idf.py flash monitor` to compile and flash the new firmware. The log will be as:  
 
@@ -101,7 +126,7 @@ Restarting in 9 seconds...
 
 7）Run command `custom_ota_gen.py -i build/hello_world.bin`, it will create a new sub-directory `custom_ota_binaries` and generate the new compressed firmware `hello_world.bin.xz.packed` in it.   
 
-8）Run command `esptool.py -p PORT write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` to burn the new compressed firmware into the ESP device's storage partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
+8）Run command `esptool.py -p PORT write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` to burn the new compressed firmware into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
 
 9）Run command `idf.py monitor` to check device log, it should be as:   
 
@@ -114,20 +139,80 @@ Restarting in 10 seconds...
 Restarting in 9 seconds...
 ```
 
+## How to Test Diff OTA
+You can use  [hello_world](https://github.com/espressif/esp-idf/tree/master/examples/get-started/hello_world) project to test the compression upgrade:  
+
+1）Enter the `hello_world` directory and run command `git clone https://github.com/espressif/esp-bootloader-plus.git bootloader_components` to clone esp bootloader plus.  
+
+2）Create a new partition file `partitions_example.csv` in the `hello_world` directory as the following table:  
+
+```
+# Name,   Type, SubType, Offset,   Size, Flags
+phy_init, data, phy, 0xf000,        4k
+nvs,      data, nvs,       ,        28k
+otadata,  data, ota,       ,        8k
+ota_0,    app,  ota_0,     ,        1M,
+ota_1,    app,  ota_1,     ,        1M,
+storage,  data, 0x22,      ,        640k,
+```
+3）Add the default configuration file `sdkconfig.defaults` in the `hello_world` directory, and copy the following configuration to this file:
+```
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_example.csv"
+CONFIG_PARTITION_TABLE_FILENAME="partitions_example.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0xd000
+
+CONFIG_BOOTLOADER_DIFF_ENABLED=y
+CONFIG_BOOTLOADER_DIFF_DDELTA=y
+CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
+```
+
+4）Execute command `idf.py set-target esp32c3` in the `hello_world` directory.  
+
+5）Run command `idf.py flash monitor` to compile and flash the new firmware. The log will be as:  
+
+```
+I (978) cpu_start: Starting scheduler.
+Hello world!
+This is esp32c3 chip with 1 CPU core(s), WiFi/BLE, silicon revision 3, 2MB external flash
+Minimum free heap size: 329596 bytes
+Restarting in 10 seconds...
+Restarting in 9 seconds...
+```
+
+6）Run the command `cp build/hello_world.bin current_app.bin` to backup the current firmware to the current directory.
+
+7）Modify the `printf("Hello world!\n")` in the `app_main()` function of `hello_world` to be `printf("Hello world, Hello esp32!\n")`, and then run command `idf.py build` to build a new firmware.   
+
+8）Execute the command `custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin`, the custom_ota_binaries directory will be generated in this directory; the patch file `patch.xz.packed` will be included in the custom_ota_binaries directory.
+
+9）Run command `esptool.py -p PORT write_flash 0x220000 custom_ota_binaries/patch.xz.packed` to burn the patch file into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
+
+10）Run command `idf.py monitor` to check device log, it should be as:   
+
+```
+I (285) cpu_start: Starting scheduler.
+Hello world, Hello esp32!
+This is esp32c3 chip with 1 CPU core(s), WiFi/BLE, silicon revision 3, 2MB external flash
+Minimum free heap size: 329596 bytes
+Restarting in 10 seconds...
+Restarting in 9 seconds...
+```
+
+
 ## Examples
 
 ToDo 
 
 ## Note
 1. If your Flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
+1. When using diff OTA, please make a backup of the app firmware burned on the device, because when generating the patch file, the firmware running in the device must be provided to generate the correct patch file.
 
 ## Release Note  
 
-1. Only the compression upgrade is supported for now, the diff compression upgrade will be released soon.  
+1. `esp bootloader plus` is supported with ESP-IDF v4.4 or later versions.  
 
-2. `esp bootloader plus` is supported with ESP-IDF v4.4 or later versions.  
-
-3. Only ESP32-C3 supports `esp bootloader plus` for now.  
+2. Only ESP32-C3 supports `esp bootloader plus` for now.  
 
 
 If you have any question in use, please feel free to contact us.

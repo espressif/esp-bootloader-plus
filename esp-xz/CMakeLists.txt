@@ -6,7 +6,7 @@ set(srcs "apps/esp_xz_decompressor.c"
         "xz-embedded/linux/lib/xz/xz_dec_stream.c")
 
 if(BOOTLOADER_BUILD)
-        set(priv_requir bootloader_support)
+        set(priv_requir bootloader_support bootloader_custom_malloc)
 endif()
 
 idf_component_register(SRCS ${srcs}
