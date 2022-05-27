@@ -1,0 +1,85 @@
+stages:
+  - build
+  - deploy
+
+# global variables
+variables: &global-variables
+  GIT_STRATEGY: none
+  PYTHON_VER: 3
+
+.before_script_preparation: &before_script_preparation
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo -n $GITLAB_KEY >> ~/.ssh/id_rsa_base64
+  - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+  - echo -e "Host gitlab.espressif.cn\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+.get_sdk: &get_sdk
+  - git clone -b $idf_branch --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
+  - export IDF_PATH=$(pwd)/esp-idf
+  - cd $IDF_PATH/examples/get-started/hello_world
+  - git clone ${CI_REPOSITORY_URL} bootloader_components
+
+.setup_tools: &setup_tools
+  - source $IDF_PATH/tools/ci/configure_ci_environment.sh
+  - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
+  - python $IDF_PATH/tools/idf_tools.py install-python-env
+  - pip install -r $IDF_PATH/requirements.txt
+
+.build_sdk: &build_sdk
+  - echo -e"\nCONFIG_BOOTLOADER_DIFF_ENABLED=y" >> sdkconfig.defaults
+  - echo -e"\nCONFIG_BOOTLOADER_DIFF_DDELTA=y" >> sdkconfig.defaults
+  - echo -e"\nCONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y" >> sdkconfig.defaults
+  - $IDF_PATH/tools/idf.py set-target $idf_target
+  - $IDF_PATH/tools/idf.py build
+
+build_template:
+  stage: build
+  tags:
+    - build
+
+  variables:
+    <<: *global-variables
+    idf_target: ""
+
+  before_script:
+    - *before_script_preparation
+
+  rules:
+    - if: $idf_target != ""
+
+  script:
+    - *get_sdk
+    - *setup_tools
+    - *build_sdk
+
+esp32c3_v4.4_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env:v4.4-1
+
+  variables:
+    idf_target: esp32c3
+    idf_branch: release/v4.4
+  extends: build_template
+
+push_master_to_github:
+  stage: deploy
+  only:
+    - master
+#  when: on_success
+  image: $CI_DOCKER_REGISTRY/esp32-ci-env
+  variables:
+    GIT_STRATEGY: clone
+    GITHUB_PUSH_REFS: refs/remotes/origin/release refs/remotes/origin/master
+  before_script:
+    - echo "skip default before_script"
+  script:
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -n $GH_PUSH_KEY > ~/.ssh/id_rsa_base64
+    - base64 --decode --ignore-garbage ~/.ssh/id_rsa_base64 > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+    - git remote add github git@github.com:espressif/esp-bootloader-plus.git
+    - eval $(git for-each-ref --shell bash --format 'if [ $CI_BUILD_REF == %(objectname) ]; then git checkout -B %(refname:strip=3); git push --follow-tags github %(refname:strip=3); fi;' $GITHUB_PUSH_REFS)
