@@ -123,6 +123,9 @@ def get_app_name():
 
     return ''
 
+def update_ddelta_library_path():
+    os.environ['LD_LIBRARY_PATH'] = "bootloader_components/tools/lib"
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-hv', '--header_ver', nargs='?', choices = ['v1', 'v2'], 
@@ -182,6 +185,7 @@ def main():
     if header_ver == 'v2' :
         # if the compress type is 'ddelta', we need to generate the uncompressed patch file, and then to compress the uncompressed patch file
         if delta_type == 'ddelta':
+            update_ddelta_library_path()
             uncompressed_patch = ''.join([cpmoressed_app_directory,'/','patch'])
             ret = subprocess.call('./bootloader_components/tools/ddelta_generate {0} {1} {2}'.format(base_file, src_file, uncompressed_patch), shell = True)
             # print('xz compress cmd return: {}'.format(ret))
