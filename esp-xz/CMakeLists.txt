@@ -19,6 +19,10 @@ idf_component_register(SRCS ${srcs}
 
 idf_build_set_property(COMPILE_DEFINITIONS "-DXZ_INTERNAL_CRC32=1" APPEND)
 
-if(BOOTLOADER_BUILD AND CONFIG_IDF_TARGET_ESP32C3)
-        target_linker_script(${COMPONENT_LIB} INTERFACE "linker.lf")
+if(BOOTLOADER_BUILD)
+        if (CONFIG_IDF_TARGET_ESP32C2)
+                target_linker_script(${COMPONENT_LIB} INTERFACE "ld/esp32c2/linker.lf")
+        elseif(CONFIG_IDF_TARGET_ESP32C3)
+                target_linker_script(${COMPONENT_LIB} INTERFACE "ld/esp32c3/linker.lf")
+        endif()
 endif()

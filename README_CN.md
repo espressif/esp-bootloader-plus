@@ -129,7 +129,7 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   7）执行命令 `custom_ota_gen.py -i build/hello_world.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含压缩后的文件 hello_world.bin.xz.packed。  
 
-  8）执行命令 `esptool.py -p PORT write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` 将压缩后的新固件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
+  8）执行命令 `esptool.py -p PORT --after no_reset write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` 将压缩后的新固件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
 
   9）执行命令 `idf.py monitor` 查看设备更新后的 log，若显示下述 log，则更新成功。  
 
@@ -190,7 +190,7 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   8）执行命令 `custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含补丁文件 patch.xz.packed。    
 
-  9）执行命令 `esptool.py -p PORT write_flash 0x220000 custom_ota_binaries/patch.xz.packed` 将补丁文件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
+  9）执行命令 `esptool.py -p PORT --after no_reset write_flash 0x220000 custom_ota_binaries/patch.xz.packed` 将补丁文件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
 
   10）执行命令 `idf.py monitor` 查看设备更新后的 log，若显示下述 log，则更新成功。  
 

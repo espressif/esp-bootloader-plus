@@ -126,7 +126,7 @@ Restarting in 9 seconds...
 
 7）Run command `custom_ota_gen.py -i build/hello_world.bin`, it will create a new sub-directory `custom_ota_binaries` and generate the new compressed firmware `hello_world.bin.xz.packed` in it.   
 
-8）Run command `esptool.py -p PORT write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` to burn the new compressed firmware into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
+8）Run command `esptool.py -p PORT --after no_reset write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` to burn the new compressed firmware into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
 
 9）Run command `idf.py monitor` to check device log, it should be as:   
 
@@ -186,7 +186,7 @@ Restarting in 9 seconds...
 
 8）Execute the command `custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin`, the custom_ota_binaries directory will be generated in this directory; the patch file `patch.xz.packed` will be included in the custom_ota_binaries directory.
 
-9）Run command `esptool.py -p PORT write_flash 0x220000 custom_ota_binaries/patch.xz.packed` to burn the patch file into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
+9）Run command `esptool.py -p PORT --after no_reset write_flash 0x220000 custom_ota_binaries/patch.xz.packed` to burn the patch file into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
 
 10）Run command `idf.py monitor` to check device log, it should be as:   
 
