@@ -19,18 +19,19 @@ variables: &global-variables
   - git clone -b $idf_branch --recursive ${GITLAB_SSH_SERVER}/espressif/esp-idf.git esp-idf
   - export IDF_PATH=$(pwd)/esp-idf
   - cd $IDF_PATH/examples/get-started/hello_world
-  - git clone ${CI_REPOSITORY_URL} bootloader_components
+  - git clone -b ${CI_COMMIT_REF_NAME} ${CI_REPOSITORY_URL} bootloader_components
 
 .setup_tools: &setup_tools
   - source $IDF_PATH/tools/ci/configure_ci_environment.sh
   - $IDF_PATH/tools/idf_tools.py --non-interactive install && eval "$($IDF_PATH/tools/idf_tools.py --non-interactive export)" || exit 1
   - python $IDF_PATH/tools/idf_tools.py install-python-env
-  - pip install -r $IDF_PATH/requirements.txt
+  - pip install -r $IDF_PATH/requirements.txt || pip install esptool -c ~/.espressif/espidf.constraints.*.txt
 
 .build_sdk: &build_sdk
   - echo -e"\nCONFIG_BOOTLOADER_DIFF_ENABLED=y" >> sdkconfig.defaults
   - echo -e"\nCONFIG_BOOTLOADER_DIFF_DDELTA=y" >> sdkconfig.defaults
   - echo -e"\nCONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y" >> sdkconfig.defaults
+  - echo -e"\nCONFIG_BOOTLOADER_LOG_LEVEL_WARN=y" >> sdkconfig.defaults
   - $IDF_PATH/tools/idf.py set-target $idf_target
   - $IDF_PATH/tools/idf.py build
 
@@ -61,6 +62,24 @@ esp32c3_v4.4_build:
   variables:
     idf_target: esp32c3
     idf_branch: release/v4.4
+  extends: build_template
+
+esp32c3_v5.0_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+
+  variables:
+    idf_target: esp32c3
+    idf_branch: release/v5.0
+  extends: build_template
+
+esp32c2_v5.0_build:
+  stage: build
+  image: $CI_DOCKER_REGISTRY/esp-env-v5.0:2
+
+  variables:
+    idf_target: esp32c2
+    idf_branch: release/v5.0
   extends: build_template
 
 push_master_to_github:

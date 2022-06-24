@@ -9,6 +9,7 @@ SECTIONS
   .xz :
   {
     . = ALIGN(4);
-    *libesp-xz.a:(.literal .text .literal.* .text.*);
+    *libesp-xz.a:(.literal .text .literal.* .text.*)
+    *libmain.a:(.literal .text .literal.* .text.*)
   } > iram_loader1_seg
 }
