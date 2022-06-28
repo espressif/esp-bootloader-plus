@@ -212,7 +212,7 @@ ToDo
 
 1. `esp bootloader plus` is supported with ESP-IDF v4.4 or later versions.  
 
-2. Only ESP32-C3 supports `esp bootloader plus` for now.  
+2. `esp bootloader plus` is available for ESP32-C3 and ESP32-C2 for now.  
 
 
 If you have any question in use, please feel free to contact us.
