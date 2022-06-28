@@ -4,7 +4,12 @@
 
 * [中文版](./README_CN.md)
 
-The [esp bootloader plus](https://github.com/espressif/esp-bootloader-plus) is an enhanced bootloader based on [ESP-IDF](https://github.com/espressif/esp-idf) [custom bootloader](https://github.com/espressif/esp-idf/tree/master/examples/custom_bootloader). It supports "decompression" or "decompression + patch" of the firmware with "compression" or "diff + compression" in the bootloader stage to upgrade the original firmware.  
+The [esp bootloader plus](https://github.com/espressif/esp-bootloader-plus) is an enhanced bootloader based on [ESP-IDF](https://github.com/espressif/esp-idf) [custom bootloader](https://github.com/espressif/esp-idf/tree/master/examples/custom_bootloader). The firmware update function is supported in the bootloader stage by decompressing the compressed firmware or applying patches to perform patching.  The following table shows the Espressif SoCs that are compatible with `esp bootloader plus` and their corresponding ESP-IDF versions.
+
+| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
+| ESP32-C2 | *N/A*                                                        | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 
 By using esp bootloader plus, you can easily use the following three OTA upgrade methods:  
 
@@ -207,12 +212,6 @@ ToDo
 ## Note
 1. If your Flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
 1. When using diff OTA, please make a backup of the app firmware burned on the device, because when generating the patch file, the firmware running in the device must be provided to generate the correct patch file.
-
-## Release Note  
-
-1. `esp bootloader plus` is supported with ESP-IDF v4.4 or later versions.  
-
-2. `esp bootloader plus` is available for ESP32-C3 and ESP32-C2 for now.  
 
 
 If you have any question in use, please feel free to contact us.

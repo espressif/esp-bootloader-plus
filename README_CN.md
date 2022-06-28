@@ -4,7 +4,12 @@
 
   * [English Version](./README.md)
 
-  [esp bootloader plus](https://gitee.com/esp-components/esp-bootloader-plus) 是乐鑫基于 [ESP-IDF](https://github.com/espressif/esp-idf) 的 [custom bootloader](https://github.com/espressif/esp-idf/tree/master/examples/custom_bootloader) 推出的增强版 bootloader，支持在 bootloader 阶段对`压缩`或`差分 + 压缩`的固件进行 `解压缩`或`解压缩 + 反差分`，来升级原有固件。  
+  [esp bootloader plus](https://gitee.com/esp-components/esp-bootloader-plus) 是乐鑫基于 [ESP-IDF](https://github.com/espressif/esp-idf) 的 [custom bootloader](https://github.com/espressif/esp-idf/tree/master/examples/custom_bootloader) 推出的增强版 bootloader，支持在 bootloader 阶段对`压缩`或`差分 + 压缩`的固件进行 `解压缩`或`解压缩 + 反差分`，来升级原有固件。  下表总结了适配 `esp bootloader plus` 的乐鑫芯片以及其对应的 ESP-IDF 版本：
+
+| Chip     | ESP-IDF Release/v4.4                                         | ESP-IDF Master                                               |
+| -------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ESP32-C3 | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
+| ESP32-C2 | *N/A*                                                        | [![alt text](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e)](https://camo.githubusercontent.com/bd5f5f82b920744ff961517942e99a46699fee58737cd9b31bf56e5ca41b781b/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2d737570706f727465642d677265656e) |
 
   使用 esp bootloader plus 可以轻松支持下述三种 OTA 更新方式：  
 
@@ -213,11 +218,6 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
      当您的 flash 分区仅有一个存储 app 的分区，和一个存储压缩固件的分区时，压缩更新将无法提供版本回滚的功能，请在下发压缩固件前验证压缩固件的可用性和正确性。  
   2. 当使用差分更新时，请备份烧录到设备上的 app 固件，因为制作补丁文件时，必须提供设备中正在运行的固件，才能制作正确的补丁文件。
 
-  ## 功能发布预告
 
-  目前，功能发布相关说明如下：   
-
-  1. 该仓库的内容基于 esp-idf v4.4 以上版本进行开发。  
-  2. 该仓库仅限于在 ESP32-C3 和 ESP32-C2 平台使用，其他平台正在内测。   
-     如在使用中有任何问题，请联系我们。  
+如在使用中有任何问题，请联系我们。  
 
