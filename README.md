@@ -207,7 +207,7 @@ Restarting in 9 seconds...
 
 ## Examples
 
-ToDo 
+- [examples/decompress/xz_compressed_ota](https://github.com/espressif/esp-iot-solution/tree/master/examples/decompress/xz_compressed_ota)
 
 ## Note
 1. If your Flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
