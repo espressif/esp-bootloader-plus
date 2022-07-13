@@ -210,7 +210,7 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   ## 示例
 
-  ToDo 
+  - [examples/decompress/xz_compressed_ota](https://github.com/espressif/esp-iot-solution/tree/master/examples/decompress/xz_compressed_ota)
 
   ## 使用注意
 
@@ -220,4 +220,3 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
 
 如在使用中有任何问题，请联系我们。  
-
