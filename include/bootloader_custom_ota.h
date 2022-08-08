@@ -61,7 +61,7 @@ typedef struct {
     uint8_t  firmware_version[32]; /*!< The compressed firmware version, it can be same as the new firmware */
     uint32_t length;               /*!< The length of compressed firmware(or compressed patch) */
     uint8_t  md5[32];              /*!< The MD5 of compressed firmware(or compressed patch) */
-} bootloader_custom_ota_header_common_t;
+} __attribute__((packed)) bootloader_custom_ota_header_common_t;
 
 typedef struct {
     bootloader_custom_ota_header_common_t header_common;
