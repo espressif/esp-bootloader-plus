@@ -1,7 +1,12 @@
 menu "Bootloader config (Custom)"
+    config BOOTLOADER_COMPRESSED_ENABLED
+        bool "Enable compressed ota support."
+        default y
+
     choice BOOTLOADER_CUSTOM_DECOMPRESSOR
         prompt "Choose decompressor"
         default BOOTLOADER_DECOMPRESSOR_XZ
+        depends on BOOTLOADER_COMPRESSED_ENABLED
         help
             Choose the corresponding decompression method to decompress the compressed OTA binary.
 
