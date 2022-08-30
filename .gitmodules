@@ -1,6 +1,6 @@
 [submodule "tools/esp_gen_patch"]
 	path = tools/esp_gen_patch
-	url = https://hub.fastgit.xyz/julian-klode/ddelta
+	url = https://gitee.com/esp-submodules/ddelta.git
 [submodule "tools/libdivsufsort"]
 	path = tools/libdivsufsort
-	url = https://hub.fastgit.xyz/y-256/libdivsufsort
+	url = https://gitee.com/esp-submodules/libdivsufsort.git
