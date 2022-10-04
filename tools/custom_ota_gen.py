@@ -187,7 +187,7 @@ def main():
         if delta_type == 'ddelta':
             update_ddelta_library_path()
             uncompressed_patch = ''.join([cpmoressed_app_directory,'/','patch'])
-            ret = subprocess.call('./bootloader_components/tools/ddelta_generate {0} {1} {2}'.format(base_file, src_file, uncompressed_patch), shell = True)
+            ret = subprocess.call('bootloader_components/tools/ddelta_generate {0} {1} {2}'.format(base_file, src_file, uncompressed_patch), shell = True)
             # print('xz compress cmd return: {}'.format(ret))
             if ret:
                 raise Exception("ddelta_gen cmd failed")
