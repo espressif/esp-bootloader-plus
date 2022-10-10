@@ -129,7 +129,7 @@ Restarting in 9 seconds...
 
 6）Modify the `printf("Hello world!\n")` in the `app_main()` function of `hello_world` to be `printf("Hello world, Hello esp32!\n")`, and then run command `idf.py build` to build a new firmware.   
 
-7）Run command `custom_ota_gen.py -i build/hello_world.bin`, it will create a new sub-directory `custom_ota_binaries` and generate the new compressed firmware `hello_world.bin.xz.packed` in it.   
+7）Run command `bootloader_components/tools/custom_ota_gen.py -i build/hello_world.bin`, it will create a new sub-directory `custom_ota_binaries` and generate the new compressed firmware `hello_world.bin.xz.packed` in it.   
 
 8）Run command `esptool.py -p PORT --after no_reset write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` to burn the new compressed firmware into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
 
@@ -189,7 +189,7 @@ Restarting in 9 seconds...
 
 7）Modify the `printf("Hello world!\n")` in the `app_main()` function of `hello_world` to be `printf("Hello world, Hello esp32!\n")`, and then run command `idf.py build` to build a new firmware.   
 
-8）Execute the command `custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin`, the custom_ota_binaries directory will be generated in this directory; the patch file `patch.xz.packed` will be included in the custom_ota_binaries directory.
+8）Execute the command `bootloader_components/tools/custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin`, the custom_ota_binaries directory will be generated in this directory; the patch file `patch.xz.packed` will be included in the custom_ota_binaries directory.
 
 9）Run command `esptool.py -p PORT --after no_reset write_flash 0x220000 custom_ota_binaries/patch.xz.packed` to burn the patch file into the ESP device's `storage` partition. Please note that the parameter `PORT` should be replaced with the actual port of your device.    
 

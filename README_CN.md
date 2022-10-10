@@ -132,7 +132,7 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   6）修改 `hello_world` app_main() 函数中的 printf("Hello world!\n") 语句为 printf("Hello world, Hello esp32!\n")，然后运行命令 `idf.py build` 编译生成新固件。  
 
-  7）执行命令 `custom_ota_gen.py -i build/hello_world.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含压缩后的文件 hello_world.bin.xz.packed。  
+  7）执行命令 `bootloader_components/tools/custom_ota_gen.py -i build/hello_world.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含压缩后的文件 hello_world.bin.xz.packed。  
 
   8）执行命令 `esptool.py -p PORT --after no_reset write_flash 0x150000 custom_ota_binaries/hello_world.bin.xz.packed` 将压缩后的新固件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
 
@@ -193,7 +193,7 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   7）修改 `hello_world` app_main() 函数中的 printf("Hello world!\n") 语句为 printf("Hello world, Hello esp32!\n")，然后运行命令 `idf.py build` 编译生成新固件。  
 
-  8）执行命令 `custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含补丁文件 patch.xz.packed。    
+  8）执行命令 `bootloader_components/tools/custom_ota_gen.py -hv v2 -c xz -d ddelta -i build/hello_world.bin -b current_app.bin` ，将在该目录下生成 custom_ota_binaries 目录；在custom_ota_binaries 目录下将包含补丁文件 patch.xz.packed。    
 
   9）执行命令 `esptool.py -p PORT --after no_reset write_flash 0x220000 custom_ota_binaries/patch.xz.packed` 将补丁文件写入到设备的 storage 分区（注：PORT 为当前设备的串口号）。  
 
