@@ -38,6 +38,11 @@
 
 #include "bootloader_storage_flash.h"
 
+#ifdef CONFIG_SECURE_BOOT_V2_ENABLED
+#include "esp_secure_boot.h"
+#define ALIGN_UP(num, align) (((num) + ((align) - 1)) & ~((align) - 1))
+#endif
+
 static const char *TAG = "bootloader_custom";
 
 static const bootloader_custom_ota_engine_t decompressor_engines[] = {
