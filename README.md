@@ -219,8 +219,9 @@ Restarting in 9 seconds...
 - [examples/decompress/xz_compressed_ota](https://github.com/espressif/esp-iot-solution/tree/master/examples/decompress/xz_compressed_ota)
 
 ## Note
-1. If your Flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
+1. If your flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
 1. When using diff OTA, please make a backup of the app firmware burned on the device, because when generating the patch file, the firmware running in the device must be provided to generate the correct patch file.
+1. The generation of the new firmware is completed in the bootloader stage. If the device is powered off during the process of generating the new firmware, the device will regenerate the new firmware at the next reboot.
 
 
 If you have any question in use, please feel free to contact us.
