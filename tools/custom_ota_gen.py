@@ -19,6 +19,7 @@ import argparse
 import binascii
 import hashlib
 import os
+import shutil
 from Crypto.Cipher import AES
 import subprocess
 import json
@@ -56,7 +57,7 @@ OLD_APP_CHECK_DATA_SIZE = 4096
 def xz_compress(store_directory, in_file):
     compressed_file = ''.join([in_file,'.xz'])
     if(os.path.exists(compressed_file)):
-        subprocess.call('rm -rf {0}'.format(compressed_file), shell = True)
+        os.remove(compressed_file)
 
     xz_compressor_filter = [
         {"id": lzma.FILTER_LZMA2, "preset": 6, "dict_size": 64*1024},
@@ -68,10 +69,8 @@ def xz_compress(store_directory, in_file):
             f.close()
     
     if not os.path.exists(''.join([store_directory,'/',compressed_file.split('/')[-1]])):
-        ret = subprocess.call('cp -f {0} {1}'.format(compressed_file, store_directory), shell = True)
+        shutil.copy(compressed_file, store_directory)
         print('copy xz file done')
-        if ret:
-            raise Exception('cp failed')
 
 def secure_boot_sign(sign_key, in_file, out_file):
     ret = os.system('espsecure.py sign_data --version 2 --keyfile {} --output {} {}'.format(sign_key, out_file, in_file))
@@ -175,9 +174,7 @@ def main():
     # rebuild the cpmpressed_app directroy
     cpmoressed_app_directory = os.path.join('custom_ota_binaries')
     if os.path.exists(cpmoressed_app_directory):
-        ret = subprocess.call('rm -rf {0}'.format(cpmoressed_app_directory), shell = True)
-        if ret:
-            raise Exception('rm old compressed app dir failed')
+        shutil.rmtree(cpmoressed_app_directory)
     
     os.mkdir(cpmoressed_app_directory)
     print('The compressed file will store in {}'.format(cpmoressed_app_directory))
