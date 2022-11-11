@@ -55,11 +55,19 @@
 
   使用 `custom_ota_gen.py` 前需要安装以下软件包。您可以使用下述命令安装需要的软件包：  
 
-  ```
-  python -m pip install pycrypto
-  ```
+- Linux 环境：
 
-  示例1：  
+```
+python -m pip install pycrypto
+```
+
+- Windows 环境：
+
+```
+pip install pycryptodome
+```
+
+**示例1：**  
 
   ```
   custom_ota_gen.py -i build/hello_world.bin
@@ -67,7 +75,7 @@
 
   在用户工程目录运行上述命令将在当前目录生成一个 `custom_ota_binaries/hello_world.bin.xz.packed` 文件，该文件就是压缩 `hello_world.bin` 得到的压缩固件。其中后缀 `.xz`代表其使用的压缩算法是 `esp-xz` 算法；后缀 `.packed`代表其已经添加了压缩头部。  
 
-  示例2：  
+**示例2：**  
 
   ```
   custom_ota_gen.py -i hello_world.bin --sign_key secure_boot_signing_key.pem
@@ -77,7 +85,7 @@
 
   注：使用签名功能，需要安装 `espsecure.py` 工具，您可以参考 [ESP-IDF编程指南-快速入门](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/esp32c3/get-started/index.html) 安装该工具。  
 
-  示例3：  
+**示例3：**  
   如果您需要生成补丁文件，请先切换到 `tools` 目录下运行脚本 `install_tools.sh`。执行成功将提示:
 
   ```
@@ -214,9 +222,10 @@ CONFIG_BOOTLOADER_DECOMPRESSOR_XZ=y
 
   ## 使用注意
 
-  1. 当使用压缩更新时，双分区情况下，不支持版本回滚。  
-     当您的 flash 分区仅有一个存储 app 的分区，和一个存储压缩固件的分区时，压缩更新将无法提供版本回滚的功能，请在下发压缩固件前验证压缩固件的可用性和正确性。  
-  2. 当使用差分更新时，请备份烧录到设备上的 app 固件，因为制作补丁文件时，必须提供设备中正在运行的固件，才能制作正确的补丁文件。
+1. 当使用压缩更新时，双分区情况下，不支持版本回滚。  
+当您的 flash 分区仅有一个存储 app 的分区，和一个存储压缩固件的分区时，压缩更新将无法提供版本回滚的功能，请在下发压缩固件前验证压缩固件的可用性和正确性。  
+2. 当使用差分更新时，请备份烧录到设备上的 app 固件，因为制作补丁文件时，必须提供设备中正在运行的固件，才能制作正确的补丁文件。
+3. 新固件的生成是在 bootloader 阶段完成的，若生成新固件的过程中设备掉电，设备将在下次重启时重新生成新固件。
 
 
 如在使用中有任何问题，请联系我们。  

@@ -54,18 +54,27 @@ The `custom_ota_gen.py` in the tools directory can be used to generate compresse
 
 The following packages need to be installed before using `custom_ota_gen.py`. You can use the following command to install the required packages:  
 
+- For Linux Users:
+
 ```
 python -m pip install pycrypto
 ```
 
-Example 1：  
+- For Windows Users:
+
+```
+pip install pycryptodome
+```
+
+**Example 1：**  
 
 ```
 custom_ota_gen.py -i build/hello-world.bin
 ```
 Run the above command in your project directory will generate the `custom_ota_binaries/hello-world.bin.xz.packed` in the current directory. It is the new compressed firmware after compressing `hello-world.bin`. The suffix `. xz` indicates that it uses `esp-xz` compression algorithm. The suffix `.packed` indicates that it has added a compressed header.  
 
-Example 2:  
+**Example 2:**  
+
 ```
 custom_ota_gen.py -i hello-world.bin --sign_key secure_boot_signing_key.pem
 ```
@@ -73,7 +82,7 @@ Run the above command in your project directory will generate the  `custom_ota_b
 
 Note: To append the image signature to the existing binary, `espsecure.py` needs to be installed. You can refer to [ESP-IDF-Get Started](https://docs.espressif.com/projects/esp-idf/en/latest/esp32c3/get-started/index.html) to install the tool. 
 
-Example 3:    
+**Example 3:**    
 
 If you need to generate patch files, please switch to the `tools` directory and run the script `install_tools.sh`. Successful execution will prompt:
 
@@ -210,8 +219,9 @@ Restarting in 9 seconds...
 - [examples/decompress/xz_compressed_ota](https://github.com/espressif/esp-iot-solution/tree/master/examples/decompress/xz_compressed_ota)
 
 ## Note
-1. If your Flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
+1. If your flash partition has only two partitions, one for storing apps and one for storing compressed firmware, then you cannot rollback to the old version if using compression upgrade. In this case, please ensure the availability and correctness of your compressed firmware before upgrading to it.    
 1. When using diff OTA, please make a backup of the app firmware burned on the device, because when generating the patch file, the firmware running in the device must be provided to generate the correct patch file.
+1. The generation of the new firmware is completed in the bootloader stage. If the device is powered off during the process of generating the new firmware, the device will regenerate the new firmware at the next reboot.
 
 
 If you have any question in use, please feel free to contact us.
