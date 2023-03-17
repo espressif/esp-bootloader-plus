@@ -24,6 +24,7 @@ from Crypto.Cipher import AES
 import subprocess
 import json
 import lzma
+import platform
 
 # src_file = 'hello-world.bin'
 # compressed_file = 'hello-world.bin.xz'
@@ -195,9 +196,11 @@ def main():
     if compress_type == 'xz':
         xz_compress(cpmoressed_app_directory, os.path.abspath(src_file))
 
-        origin_app_name = src_file.split('/')[-1]
+        spliter = '\\' if platform.system() == 'Windows' else '/'
 
-        compressed_file = ''.join([cpmoressed_app_directory, '/', origin_app_name,'.xz'])
+        origin_app_name = src_file.split(spliter)[-1]
+
+        compressed_file = ''.join([cpmoressed_app_directory, spliter, origin_app_name,'.xz'])
     else:
         compressed_file = ''.join(src_file)
     
