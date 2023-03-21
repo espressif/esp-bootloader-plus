@@ -68,7 +68,7 @@ def xz_compress(store_directory, in_file):
             f.write(data)
             f.close()
     
-    if not os.path.exists(''.join([store_directory,'/',compressed_file.split('/')[-1]])):
+    if not os.path.exists(os.path.join(store_directory, os.path.split(compressed_file)[1])):
         shutil.copy(compressed_file, store_directory)
         print('copy xz file done')
 
@@ -183,7 +183,7 @@ def main():
         # if the compress type is 'ddelta', we need to generate the uncompressed patch file, and then to compress the uncompressed patch file
         if delta_type == 'ddelta':
             update_ddelta_library_path()
-            uncompressed_patch = ''.join([cpmoressed_app_directory,'/','patch'])
+            uncompressed_patch = os.path.join(cpmoressed_app_directory, 'patch')
             ret = subprocess.call('bootloader_components/tools/ddelta_generate {0} {1} {2}'.format(base_file, src_file, uncompressed_patch), shell = True)
             # print('xz compress cmd return: {}'.format(ret))
             if ret:
@@ -195,9 +195,9 @@ def main():
     if compress_type == 'xz':
         xz_compress(cpmoressed_app_directory, os.path.abspath(src_file))
 
-        origin_app_name = src_file.split('/')[-1]
-
-        compressed_file = ''.join([cpmoressed_app_directory, '/', origin_app_name,'.xz'])
+        origin_app_name = os.path.split(src_file)[1]
+        compressed_file_name = ''.join([origin_app_name, '.xz'])
+        compressed_file = os.path.join(cpmoressed_app_directory, compressed_file_name)
     else:
         compressed_file = ''.join(src_file)
     
