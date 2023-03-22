@@ -168,7 +168,10 @@ static bool bootloader_custom_ota_header_check()
     * Read sizeof(compress_header) bytes data to check whether it is a custom OTA app.bin(include diff compressed OTA or compressed only OTA).
     * The custom OTA app.bin will have a custom header, where the magic string is BOOTLOADER_CUSTOM_OTA_HEADER_MAGIC.
     */
-    bootloader_flash_read(custom_ota_config.src_addr, &custom_ota_header, sizeof(custom_ota_header), true);
+    if (bootloader_flash_read(custom_ota_config.src_addr, &custom_ota_header, sizeof(custom_ota_header), true) != ESP_OK) {
+        ESP_LOGD(TAG, "read ota header err!");
+        return false;
+    }
 
     if (strcmp((char *)custom_ota_header.header.magic, BOOTLOADER_CUSTOM_OTA_HEADER_MAGIC)) {
         return false;
@@ -199,7 +202,7 @@ static bool bootloader_custom_ota_verify_signature()
     uint32_t bootloader_custom_ota_header_length = bootloader_custom_ota_get_header_size(&custom_ota_header);
     uint32_t packed_image_len = ALIGN_UP((custom_ota_header.header.length + bootloader_custom_ota_header_length), FLASH_SECTOR_SIZE);
 #ifdef	CONFIG_BOOTLOADER_CUSTOM_DEBUG_ON
-    ESP_LOGI(TAG, "sign_length is %0xu, src_addr is %0xu, packed_image_len is %0xu", header->length, custom_ota_config.src_addr, packed_image_len);
+    ESP_LOGI(TAG, "sign_length is %0xu, src_addr is %0xu, packed_image_len is %0xu", custom_ota_header.header.length, custom_ota_config.src_addr, packed_image_len);
 #endif
     //check signature
     esp_err_t verify_err = esp_secure_boot_verify_signature(custom_ota_config.src_addr, packed_image_len);
